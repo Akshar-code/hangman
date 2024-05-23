@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'quay.io/rh-ee-akottuva/tas-registry:latest'
+        DOCKER_IMAGE = 'quay.io/rh-ee-akottuva/hangman:latest'
         PYTHONPATH = "${env.WORKSPACE}"
         COSIGN_TIMEOUT = '300'
     }
