@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        APP_DIR = "/Users/akottuva/Documents/Redhat work stuff/Sample Projects/hangman"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -13,6 +17,13 @@ pipeline {
                 }
             }
         }
+        stage('Copy app.py') {
+            steps {
+                sh '''
+                cp "${APP_DIR}/app.py" .
+                '''
+            }
+        }
         stage('Setup Python Environment') {
             steps {
                 sh 'python3 -m venv venv'
@@ -22,12 +33,19 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'source venv/bin/activate && pytest'
+                sh '''
+                source venv/bin/activate
+                export PYTHONPATH=$WORKSPACE
+                pytest
+                '''
             }
         }
         stage('Code Quality') {
             steps {
-                sh 'source venv/bin/activate && pylint app.py || true'
+                sh '''
+                source venv/bin/activate
+                pylint app.py || true
+                '''
             }
         }
         stage('Package') {
