@@ -3,13 +3,13 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'quay.io/your-repo/hangman'
-        COSIGN_PASSWORD = credentials('cosign_password') // Ensure 'cosign_password' is correctly added to Jenkins credentials
+        COSIGN_PASSWORD = credentials('cosign_password')
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Akshar-code/hangman'
+                git branch: 'main', url: 'https://github.com/Akshar-code/hangman'
             }
         }
 
