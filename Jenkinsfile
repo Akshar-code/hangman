@@ -2,31 +2,22 @@ pipeline {
     agent any
 
     environment {
-        APP_DIR = "/Users/akottuva/Documents/Redhat work stuff/Sample Projects/hangman"
-        IMAGE_NAME = "hangman-app"
-        TAG = "latest"
+        REPO_URL = 'https://github.com/Akshar-code/hangman'
+        BRANCH = 'main'
+        IMAGE_NAME = 'tas-registry'
+        IMAGE_TAG = 'latest'
+        QUAY_REGISTRY = 'quay.io'
+        QUAY_NAMESPACE = 'rh-ee-akottuva'  // Replace with your Quay namespace
+        CREDENTIALS_ID = 'quay-credentials'  // The ID of the credentials you added in Jenkins
     }
 
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: '*/main']],
-                        userRemoteConfigs: [[url: 'https://github.com/Akshar-code/hangman']]
-                    ])
-                }
+                git url: "${env.REPO_URL}", branch: "${env.BRANCH}"
             }
         }
-        stage('Copy app.py') {
-            steps {
-                sh '''
-                cp "${APP_DIR}/app.py" .
-                cp "${APP_DIR}/requirements.txt" .
-                '''
-            }
-        }
+
         stage('Setup Python Environment') {
             steps {
                 sh 'python3 -m venv venv'
@@ -34,70 +25,44 @@ pipeline {
                 sh 'source venv/bin/activate && pip install -r requirements.txt'
             }
         }
+
         stage('Test') {
             steps {
-                sh '''
-                source venv/bin/activate
-                export PYTHONPATH=$WORKSPACE
-                pytest
-                '''
+                sh 'source venv/bin/activate && pytest'
             }
         }
-        stage('Code Quality') {
+
+        stage('Build Container Image') {
             steps {
-                sh '''
-                source venv/bin/activate
-                pylint app.py || true
-                '''
+                script {
+                    sh '''
+                    podman build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    podman tag ${IMAGE_NAME}:${IMAGE_TAG} ${QUAY_REGISTRY}/${QUAY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}
+                    '''
+                }
             }
         }
-        stage('Build with Podman') {
+
+        stage('Push to Quay') {
             steps {
-                sh '''
-                # Create a simple Dockerfile for the application
-                cat <<EOF > Dockerfile
-                FROM python:3.9-slim
-                WORKDIR /app
-                COPY app.py requirements.txt /app/
-                RUN pip install --no-cache-dir -r requirements.txt
-                CMD ["python", "app.py"]
-                EOF
-                
-                # Build the container image using Podman
-                podman build -t ${IMAGE_NAME}:${TAG} .
-                '''
-            }
-        }
-        stage('Push Image') {
-            steps {
-                sh '''
-                # Login to container registry (if necessary)
-                # podman login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY_URL
-                
-                # Push the image to the container registry (if necessary)
-                # podman push ${IMAGE_NAME}:${TAG}
-                echo "Skipping push for this example..."
-                '''
-            }
-        }
-        stage('Package') {
-            steps {
-                sh 'echo "Packaging the application..."'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                sh 'echo "Deploying the application..."'
+                withCredentials([usernamePassword(credentialsId: env.CREDENTIALS_ID, usernameVariable: 'QUAY_USERNAME', passwordVariable: 'QUAY_PASSWORD')]) {
+                    script {
+                        sh '''
+                        podman login ${QUAY_REGISTRY} -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
+                        podman push ${QUAY_REGISTRY}/${QUAY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}
+                        '''
+                    }
+                }
             }
         }
     }
+
     post {
         always {
             cleanWs()
-            echo 'Pipeline finished!'
         }
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Pipeline finished successfully!'
         }
         failure {
             echo 'Pipeline failed!'
