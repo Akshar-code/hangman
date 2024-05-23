@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'quay.io/your-repo/hangman'
+        DOCKER_IMAGE = 'quay.io/rh-ee-akottuva/tas-registry:latest'
         COSIGN_PASSWORD = credentials('cosign_password')
+        ROOT_DIR = '/Users/akottuva/.jenkins/workspace/Hangman Python Application'
     }
 
     stages {
@@ -28,6 +29,7 @@ pipeline {
             steps {
                 sh '''
                     source venv/bin/activate
+                    export PYTHONPATH=${ROOT_DIR}
                     pytest
                 '''
             }
