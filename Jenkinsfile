@@ -20,6 +20,7 @@ pipeline {
                 // Activate virtual environment and install dependencies
                 sh '''
                     source venv/bin/activate
+                    pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
             }
@@ -30,6 +31,7 @@ pipeline {
                 // Activate virtual environment and run tests
                 sh '''
                     source venv/bin/activate
+                    pip list
                     pytest
                 '''
             }
