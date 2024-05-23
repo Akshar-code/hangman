@@ -51,7 +51,12 @@ pipeline {
                     sh '''
                         source tas-env-values
                         cosign initialize
-                        cosign sign ${IMAGE_NAME} --yes
+                        cosign sign ${IMAGE_NAME} \
+                            --fulcio-url=$COSIGN_FULCIO_URL \
+                            --oidc-issuer=$COSIGN_OIDC_ISSUER \
+                            --rekor-url=$COSIGN_REKOR_URL \
+                            --upload=true \
+                            --yes
                     '''
                 }
             }
