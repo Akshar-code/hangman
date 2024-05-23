@@ -13,31 +13,45 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Setup Python Environment') {
             steps {
-                // Install dependencies
-                sh '/opt/homebrew/bin/pip3 install -r requirements.txt'
+                // Create virtual environment
+                sh '/opt/homebrew/bin/python3 -m venv venv'
+                // Activate virtual environment and install dependencies
+                sh '''
+                    source venv/bin/activate
+                    pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Test') {
             steps {
-                // Run tests
-                sh '/opt/homebrew/bin/pytest'
+                // Activate virtual environment and run tests
+                sh '''
+                    source venv/bin/activate
+                    pytest
+                '''
             }
         }
 
         stage('Code Quality') {
             steps {
-                // Run static code analysis
-                sh '/opt/homebrew/bin/pylint your_hangman_script.py'
+                // Activate virtual environment and run static code analysis
+                sh '''
+                    source venv/bin/activate
+                    pylint your_hangman_script.py
+                '''
             }
         }
 
         stage('Package') {
             steps {
-                // Package the application
-                sh '/opt/homebrew/bin/python3 setup.py sdist'
+                // Activate virtual environment and package the application
+                sh '''
+                    source venv/bin/activate
+                    python setup.py sdist
+                '''
             }
         }
 
