@@ -29,9 +29,10 @@ pipeline {
 
         stage('Test') {
             steps {
-                // Activate virtual environment and run tests
+                // Activate virtual environment, set PYTHONPATH and run tests
                 sh '''
                     source venv/bin/activate
+                    export PYTHONPATH=$WORKSPACE
                     which python
                     which pip
                     which pytest
