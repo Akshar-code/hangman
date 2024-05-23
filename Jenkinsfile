@@ -45,6 +45,13 @@ pipeline {
                 }
             }
         }
+        stage('Initialize') {
+            steps {
+                sh '''
+                    cosign initialize
+                '''
+            }
+        }
         stage('Sign Image') {
             steps {
                 withCredentials([string(credentialsId: 'cosign-key', variable: 'COSIGN_KEY_CONTENT')]) {
