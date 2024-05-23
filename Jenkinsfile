@@ -18,7 +18,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/Akshar-code/hangman'
+                git branch: 'main', url: 'https://github.com/Akshar-code/hangman'
             }
         }
 
