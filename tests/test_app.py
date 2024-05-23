@@ -39,11 +39,14 @@ def test_game_win(app):
     app.attempts = 0
     app.guesses = set()
     app.word_label.config(text=" ".join(app.word_display))
+
+    print(f"Initial word_display: {app.word_display}")
     
     for letter in "TEST":
         app.guess_entry.insert(0, letter)
         app.check_guess()
-    
+        print(f"Word display after guessing '{letter}': {app.word_display}")
+
     assert "_" not in app.word_display
     assert app.attempts < app.max_attempts
 
@@ -59,8 +62,11 @@ def test_game_over(app):
     while incorrect_letter in app.word:
         incorrect_letter = chr(ord(incorrect_letter) - 1)
     
+    print(f"Initial attempts: {app.attempts}")
+    
     for _ in range(app.max_attempts):
         app.guess_entry.insert(0, incorrect_letter)
         app.check_guess()
+        print(f"Attempts after guessing '{incorrect_letter}': {app.attempts}")
     
     assert app.attempts >= app.max_attempts
