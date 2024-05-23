@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'quay.io/your-repo/hangman'
-        COSIGN_PASSWORD = credentials('cosign_password') // Assuming you have stored the cosign password in Jenkins credentials
+        COSIGN_PASSWORD = credentials('cosign_password') // Ensure 'cosign_password' is correctly added to Jenkins credentials
     }
 
     stages {
