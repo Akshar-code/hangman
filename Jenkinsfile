@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout the code from the repository
-                git 'https://github.com/Akshar-code/hangman.git'
+                git branch: 'main', url: 'https://github.com/Akshar-code/hangman'
             }
         }
 
@@ -56,7 +56,8 @@ pipeline {
     post {
         always {
             // Clean up workspace
-            cleanWs()
+            echo 'Cleaning up workspace...'
+            deleteDir()
         }
         success {
             echo 'Pipeline succeeded!'
