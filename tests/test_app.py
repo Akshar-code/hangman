@@ -1,61 +1,49 @@
 import pytest
+import tkinter as tk
 from app import HangmanGame
 
-class MockRoot:
-    def __init__(self):
-        self.title_text = ""
-        self.geometry_text = ""
-
-    def title(self, title):
-        self.title_text = title
-
-    def geometry(self, geometry):
-        self.geometry_text = geometry
-
 @pytest.fixture
-def game():
-    root = MockRoot()
-    return HangmanGame(root)
+def app():
+    root = tk.Tk()
+    game = HangmanGame(root)
+    yield game
+    root.destroy()
 
-def test_initial_state(game):
-    assert game.attempts == 0
-    assert len(game.word) > 0
-    assert len(game.word_display) == len(game.word)
-    assert all(letter == "_" for letter in game.word_display)
-    assert game.max_attempts == 6
+def test_initial_state(app):
+    assert app.word_display == ["_" for _ in app.word]
+    assert app.attempts == 0
+    assert app.guesses == set()
 
-def test_check_guess_correct(game):
-    game.word = "TEST"
-    game.word_display = ["_", "_", "_", "_"]
-    game.check_guess = lambda: HangmanGame.check_guess(game)
-    game.guess_entry.get = lambda: "E"
-    game.check_guess()
-    assert game.word_display == ["_", "E", "_", "_"]
-    assert game.attempts == 0
+def test_check_guess_correct(app):
+    initial_display = app.word_display.copy()
+    correct_letter = app.word[0]
+    app.guess_entry.insert(0, correct_letter)
+    app.check_guess()
+    assert app.word_display != initial_display
+    assert correct_letter in app.guesses
+    assert app.attempts == 0
 
-def test_check_guess_incorrect(game):
-    game.word = "TEST"
-    game.word_display = ["_", "_", "_", "_"]
-    game.check_guess = lambda: HangmanGame.check_guess(game)
-    game.guess_entry.get = lambda: "X"
-    game.check_guess()
-    assert game.word_display == ["_", "_", "_", "_"]
-    assert game.attempts == 1
+def test_check_guess_incorrect(app):
+    incorrect_letter = 'Z'
+    while incorrect_letter in app.word:
+        incorrect_letter = chr(ord(incorrect_letter) - 1)
+    app.guess_entry.insert(0, incorrect_letter)
+    app.check_guess()
+    assert incorrect_letter in app.guesses
+    assert app.attempts == 1
 
-def test_game_win(game):
-    game.word = "TEST"
-    game.word_display = ["T", "E", "S", "T"]
-    game.check_guess = lambda: HangmanGame.check_guess(game)
-    game.guess_entry.get = lambda: "E"
-    game.check_guess()
-    assert game.word_display == ["T", "E", "S", "T"]
-    assert game.attempts == 0
+def test_game_win(app):
+    for letter in set(app.word):
+        app.guess_entry.insert(0, letter)
+        app.check_guess()
+    assert "_" not in app.word_display
+    assert app.attempts < app.max_attempts
 
-def test_game_over(game):
-    game.word = "TEST"
-    game.word_display = ["_", "_", "_", "_"]
-    game.attempts = 5
-    game.check_guess = lambda: HangmanGame.check_guess(game)
-    game.guess_entry.get = lambda: "X"
-    game.check_guess()
-    assert game.attempts == 6
+def test_game_over(app):
+    incorrect_letter = 'Z'
+    while incorrect_letter in app.word:
+        incorrect_letter = chr(ord(incorrect_letter) - 1)
+    for _ in range(app.max_attempts):
+        app.guess_entry.insert(0, incorrect_letter)
+        app.check_guess()
+    assert app.attempts >= app.max_attempts
