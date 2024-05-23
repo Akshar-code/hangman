@@ -47,9 +47,11 @@ pipeline {
         }
         stage('Sign Image') {
             steps {
-                withCredentials([string(credentialsId: 'cosign-private-key', variable: 'COSIGN_PRIVATE_KEY')]) {
+                withCredentials([string(credentialsId: 'cosign-key', variable: 'COSIGN_KEY_CONTENT')]) {
                     sh '''
-                        cosign sign --key=COSIGN_PRIVATE_KEY ${IMAGE_NAME}
+                        echo "${COSIGN_KEY_CONTENT}" > cosign.key
+                        cosign sign --key cosign.key ${IMAGE_NAME}
+                        rm cosign.key
                     '''
                 }
             }
