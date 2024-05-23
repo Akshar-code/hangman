@@ -58,7 +58,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'cosign-key', variable: 'COSIGN_KEY_CONTENT')]) {
                     sh '''
                         echo ${COSIGN_KEY_CONTENT} > /tmp/cosign.key
-                        cosign sign ${IMAGE_NAME} -y --key /tmp/cosign.key
+                        COSIGN_PASSWORD="testing" cosign sign ${IMAGE_NAME} -y --key /tmp/cosign.key
                         rm cosign.key
                     '''
                 }
