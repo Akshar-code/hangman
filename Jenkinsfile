@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         APP_DIR = "/Users/akottuva/Documents/Redhat work stuff/Sample Projects/hangman"
+        IMAGE_NAME = "hangman-app"
+        TAG = "latest"
     }
 
     stages {
@@ -11,7 +13,7 @@ pipeline {
                 script {
                     checkout([
                         $class: 'GitSCM',
-                        branches: [[name: '*/main']],  // Ensure this matches your branch name
+                        branches: [[name: '*/main']],
                         userRemoteConfigs: [[url: 'https://github.com/Akshar-code/hangman']]
                     ])
                 }
@@ -21,6 +23,7 @@ pipeline {
             steps {
                 sh '''
                 cp "${APP_DIR}/app.py" .
+                cp "${APP_DIR}/requirements.txt" .
                 '''
             }
         }
@@ -45,6 +48,35 @@ pipeline {
                 sh '''
                 source venv/bin/activate
                 pylint app.py || true
+                '''
+            }
+        }
+        stage('Build with Podman') {
+            steps {
+                sh '''
+                # Create a simple Dockerfile for the application
+                cat <<EOF > Dockerfile
+                FROM python:3.9-slim
+                WORKDIR /app
+                COPY app.py requirements.txt /app/
+                RUN pip install --no-cache-dir -r requirements.txt
+                CMD ["python", "app.py"]
+                EOF
+                
+                # Build the container image using Podman
+                podman build -t ${IMAGE_NAME}:${TAG} .
+                '''
+            }
+        }
+        stage('Push Image') {
+            steps {
+                sh '''
+                # Login to container registry (if necessary)
+                # podman login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY_URL
+                
+                # Push the image to the container registry (if necessary)
+                # podman push ${IMAGE_NAME}:${TAG}
+                echo "Skipping push for this example..."
                 '''
             }
         }
