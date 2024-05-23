@@ -1,7 +1,13 @@
 import tkinter as tk
 
 class HangmanGame:
+    """
+    HangmanGame is a simple hangman game implemented using Tkinter.
+    """
     def __init__(self, root):
+        """
+        Initialize the game with the given root window.
+        """
         self.root = root
         self.word = "TEST"
         self.word_display = ["_" for _ in self.word]
@@ -11,6 +17,9 @@ class HangmanGame:
         self.create_widgets()
 
     def create_widgets(self):
+        """
+        Create the widgets for the game.
+        """
         self.word_label = tk.Label(self.root, text=" ".join(self.word_display))
         self.word_label.pack()
         self.guess_entry = tk.Entry(self.root)
@@ -19,6 +28,9 @@ class HangmanGame:
         self.check_button.pack()
 
     def check_guess(self):
+        """
+        Check the user's guess and update the game state.
+        """
         guess = self.guess_entry.get().upper()
         if guess in self.guesses:
             return
