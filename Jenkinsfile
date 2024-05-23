@@ -48,6 +48,7 @@ pipeline {
         stage('Initialize') {
             steps {
                 sh '''
+                    rm -rf ~/.sigstore
                     cosign initialize
                 '''
             }
