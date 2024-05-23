@@ -3,14 +3,14 @@ from app import HangmanGame
 
 class MockRoot:
     def __init__(self):
-        self.title = ""
-        self.geometry = ""
-    
+        self.title_text = ""
+        self.geometry_text = ""
+
     def title(self, title):
-        self.title = title
+        self.title_text = title
 
     def geometry(self, geometry):
-        self.geometry = geometry
+        self.geometry_text = geometry
 
 @pytest.fixture
 def game():
@@ -27,7 +27,7 @@ def test_initial_state(game):
 def test_check_guess_correct(game):
     game.word = "TEST"
     game.word_display = ["_", "_", "_", "_"]
-    game.check_guess = lambda guess: HangmanGame.check_guess(game)
+    game.check_guess = lambda: HangmanGame.check_guess(game)
     game.guess_entry.get = lambda: "E"
     game.check_guess()
     assert game.word_display == ["_", "E", "_", "_"]
@@ -36,7 +36,7 @@ def test_check_guess_correct(game):
 def test_check_guess_incorrect(game):
     game.word = "TEST"
     game.word_display = ["_", "_", "_", "_"]
-    game.check_guess = lambda guess: HangmanGame.check_guess(game)
+    game.check_guess = lambda: HangmanGame.check_guess(game)
     game.guess_entry.get = lambda: "X"
     game.check_guess()
     assert game.word_display == ["_", "_", "_", "_"]
@@ -45,7 +45,7 @@ def test_check_guess_incorrect(game):
 def test_game_win(game):
     game.word = "TEST"
     game.word_display = ["T", "E", "S", "T"]
-    game.check_guess = lambda guess: HangmanGame.check_guess(game)
+    game.check_guess = lambda: HangmanGame.check_guess(game)
     game.guess_entry.get = lambda: "E"
     game.check_guess()
     assert game.word_display == ["T", "E", "S", "T"]
@@ -55,7 +55,7 @@ def test_game_over(game):
     game.word = "TEST"
     game.word_display = ["_", "_", "_", "_"]
     game.attempts = 5
-    game.check_guess = lambda guess: HangmanGame.check_guess(game)
+    game.check_guess = lambda: HangmanGame.check_guess(game)
     game.guess_entry.get = lambda: "X"
     game.check_guess()
     assert game.attempts == 6
