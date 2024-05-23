@@ -2,43 +2,38 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'quay.io/rh-ee-akottuva/tas-registry:latest'
-        COSIGN_PASSWORD = credentials('cosign_password')
-        ROOT_DIR = '/Users/akottuva/.jenkins/workspace/Hangman Python Application'
+        DOCKER_IMAGE = 'quay.io/rh-ee-akottuva/hangman:latest'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Setup Environment') {
             steps {
-                git branch: 'main', url: 'https://github.com/Akshar-code/hangman'
+                script {
+                    sh 'python3 -m venv venv'
+                    sh 'source venv/bin/activate && pip install --upgrade pip'
+                    sh 'source venv/bin/activate && pip install -r requirements.txt'
+                }
             }
         }
 
-        stage('Setup Python Environment') {
+        stage('Checkout') {
             steps {
-                sh '''
-                    python3 -m venv venv
-                    source venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                '''
+                git 'https://github.com/Akshar-code/hangman'
             }
         }
 
         stage('Test') {
             steps {
-                sh '''
-                    source venv/bin/activate
-                    export PYTHONPATH=${ROOT_DIR}
-                    pytest
-                '''
+                script {
+                    sh 'source venv/bin/activate && pytest'
+                }
             }
         }
 
         stage('Build Container Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE}:latest")
+                    sh "podman build -t ${DOCKER_IMAGE} ."
                 }
             }
         }
@@ -46,8 +41,9 @@ pipeline {
         stage('Push to Quay') {
             steps {
                 script {
-                    docker.withRegistry('https://quay.io', 'quay_credentials') {
-                        docker.image("${DOCKER_IMAGE}:latest").push()
+                    withCredentials([string(credentialsId: 'quay-robot-account-password', variable: 'QUAY_PASSWORD')]) {
+                        sh "podman login quay.io -u rh-ee-akottuva+jenkins_testing -p $QUAY_PASSWORD"
+                        sh "podman push ${DOCKER_IMAGE}"
                     }
                 }
             }
@@ -55,19 +51,22 @@ pipeline {
 
         stage('Sign Image') {
             steps {
-                sh '''
-                    source tas-env-values
-                    cosign sign --key env://COSIGN_PASSWORD ${DOCKER_IMAGE}:latest
-                '''
+                script {
+                    withCredentials([string(credentialsId: 'cosign-password', variable: 'COSIGN_PASSWORD')]) {
+                        sh 'source tas-env-values'
+                        sh 'cosign initialize'
+                        sh "COSIGN_PASSWORD=$COSIGN_PASSWORD cosign sign ${DOCKER_IMAGE}"
+                    }
+                }
             }
         }
 
         stage('Verify Image') {
             steps {
-                sh '''
-                    source tas-env-values
-                    cosign verify ${DOCKER_IMAGE}:latest
-                '''
+                script {
+                    sh 'source tas-env-values'
+                    sh "cosign verify ${DOCKER_IMAGE}"
+                }
             }
         }
     }
@@ -75,6 +74,9 @@ pipeline {
     post {
         always {
             cleanWs()
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
