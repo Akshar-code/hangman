@@ -15,13 +15,12 @@ def test_initial_state(app):
     assert app.guesses == set()
 
 def test_check_guess_correct(app):
-    initial_display = app.word_display.copy()
     correct_letter = app.word[0]
     app.guess_entry.insert(0, correct_letter)
     app.check_guess()
-    assert app.word_display != initial_display
     assert correct_letter in app.guesses
     assert app.attempts == 0
+    assert correct_letter in app.word_display
 
 def test_check_guess_incorrect(app):
     incorrect_letter = 'Z'
