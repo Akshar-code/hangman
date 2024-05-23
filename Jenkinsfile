@@ -4,7 +4,13 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Akshar-code/hangman'
+                script {
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/main']],  // Ensure this matches your branch name
+                        userRemoteConfigs: [[url: 'https://github.com/Akshar-code/hangman']]
+                    ])
+                }
             }
         }
         stage('Setup Python Environment') {
@@ -21,19 +27,16 @@ pipeline {
         }
         stage('Code Quality') {
             steps {
-                // Allow pylint to run and collect issues, but don't fail the pipeline if pylint fails
                 sh 'source venv/bin/activate && pylint app.py || true'
             }
         }
         stage('Package') {
             steps {
-                // Add packaging steps here
                 sh 'echo "Packaging the application..."'
             }
         }
         stage('Deploy') {
             steps {
-                // Add deployment steps here
                 sh 'echo "Deploying the application..."'
             }
         }
