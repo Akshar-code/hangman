@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'quay.io/rh-ee-akottuva/hangman:latest'
+        PYTHONPATH = "${env.WORKSPACE}" // This sets the PYTHONPATH to the workspace directory
     }
 
     stages {
@@ -25,7 +26,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    sh 'source venv/bin/activate && pytest'
+                    sh 'source venv/bin/activate && export PYTHONPATH=${WORKSPACE} && pytest'
                 }
             }
         }
