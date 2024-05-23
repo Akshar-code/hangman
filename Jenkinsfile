@@ -49,7 +49,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'cosign-private-key', variable: 'COSIGN_PRIVATE_KEY')]) {
                     sh '''
-                        cosign sign --key-env=COSIGN_PRIVATE_KEY ${IMAGE_NAME}
+                        cosign sign --key=COSIGN_PRIVATE_KEY ${IMAGE_NAME}
                     '''
                 }
             }
