@@ -22,6 +22,7 @@ pipeline {
                     source venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
+                    pip list
                 '''
             }
         }
@@ -31,7 +32,9 @@ pipeline {
                 // Activate virtual environment and run tests
                 sh '''
                     source venv/bin/activate
-                    pip list
+                    which python
+                    which pip
+                    which pytest
                     pytest
                 '''
             }
@@ -42,7 +45,7 @@ pipeline {
                 // Activate virtual environment and run static code analysis
                 sh '''
                     source venv/bin/activate
-                    pylint your_hangman_script.py
+                    pylint app.py
                 '''
             }
         }
