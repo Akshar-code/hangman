@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        PATH = "/opt/homebrew/bin/python3:/opt/homebrew/bin/pip3:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:$PATH"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -12,28 +16,28 @@ pipeline {
         stage('Build') {
             steps {
                 // Install dependencies
-                sh 'pip install -r requirements.txt'
+                sh '/usr/local/bin/pip3 install -r requirements.txt'
             }
         }
 
         stage('Test') {
             steps {
                 // Run tests
-                sh 'pytest'
+                sh '/usr/local/bin/pytest'
             }
         }
 
         stage('Code Quality') {
             steps {
                 // Run static code analysis
-                sh 'pylint your_hangman_script.py'
+                sh '/usr/local/bin/pylint your_hangman_script.py'
             }
         }
 
         stage('Package') {
             steps {
                 // Package the application
-                sh 'python setup.py sdist'
+                sh '/usr/local/bin/python3 setup.py sdist'
             }
         }
 
