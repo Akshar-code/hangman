@@ -33,21 +33,34 @@ def test_check_guess_incorrect(app):
     assert app.attempts == 1
 
 def test_game_win(app):
-    app.word = "TEST"  # Set a known word for testing
+    app.word = "TEST"
     app.word_display = ["_" for _ in app.word]
-    for letter in set(app.word):
+    app.max_attempts = 6
+    app.attempts = 0
+    app.guesses = set()
+    app.word_label.config(text=" ".join(app.word_display))
+    
+    for letter in "TEST":
         app.guess_entry.insert(0, letter)
         app.check_guess()
+    
     assert "_" not in app.word_display
     assert app.attempts < app.max_attempts
 
 def test_game_over(app):
-    app.word = "TEST"  # Set a known word for testing
+    app.word = "TEST"
     app.word_display = ["_" for _ in app.word]
+    app.max_attempts = 6
+    app.attempts = 0
+    app.guesses = set()
+    app.word_label.config(text=" ".join(app.word_display))
+
     incorrect_letter = 'Z'
     while incorrect_letter in app.word:
         incorrect_letter = chr(ord(incorrect_letter) - 1)
+    
     for _ in range(app.max_attempts):
         app.guess_entry.insert(0, incorrect_letter)
         app.check_guess()
+    
     assert app.attempts >= app.max_attempts
