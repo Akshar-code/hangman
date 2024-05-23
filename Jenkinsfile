@@ -45,20 +45,12 @@ pipeline {
                 }
             }
         }
-        stage('Initialize') {
-            steps {
-                sh '''
-                    rm -rf ~/.sigstore
-                    cosign initialize
-                '''
-            }
-        }
         stage('Sign Image') {
             steps {
                 withCredentials([string(credentialsId: 'cosign-key', variable: 'COSIGN_KEY_CONTENT')]) {
                     sh '''
                         echo ${COSIGN_KEY_CONTENT} > /tmp/cosign.key
-                        COSIGN_PASSWORD="testing" cosign sign ${IMAGE_NAME} -y --key /tmp/cosign.key
+                        cosign sign ${IMAGE_NAME} /tmp/cosign.key
                         rm cosign.key
                     '''
                 }
