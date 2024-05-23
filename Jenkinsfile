@@ -47,16 +47,9 @@ pipeline {
         }
         stage('Sign Image') {
             steps {
-                withCredentials([string(credentialsId: 'cosign-password', variable: 'COSIGN_PASSWORD')]) {
+                withCredentials([string(credentialsId: 'cosign-private-key', variable: 'COSIGN_PRIVATE_KEY')]) {
                     sh '''
-                        source tas-env-values
-                        cosign initialize
-                        cosign sign ${IMAGE_NAME} \
-                            --fulcio-url=$COSIGN_FULCIO_URL \
-                            --oidc-issuer=$COSIGN_OIDC_ISSUER \
-                            --rekor-url=$COSIGN_REKOR_URL \
-                            --upload=true \
-                            --yes
+                        cosign sign --key-env=COSIGN_PRIVATE_KEY ${IMAGE_NAME}
                     '''
                 }
             }
