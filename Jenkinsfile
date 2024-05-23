@@ -49,8 +49,8 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'cosign-key', variable: 'COSIGN_KEY_CONTENT')]) {
                     sh '''
-                        echo "${COSIGN_KEY_CONTENT}" > cosign.key
-                        cosign sign --key cosign.key ${IMAGE_NAME}
+                        echo ${COSIGN_KEY_CONTENT} > /tmp/cosign.key
+                        cosign sign ${IMAGE_NAME} /tmp/cosign.key
                         rm cosign.key
                     '''
                 }
