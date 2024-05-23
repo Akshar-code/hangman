@@ -1,0 +1,14 @@
+export TUF_URL=https://tuf-trusted-artifact-signer.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com
+export OIDC_ISSUER_URL=https://keycloak-keycloak-system.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com/auth/realms/trusted-artifact-signer
+export COSIGN_FULCIO_URL=https://fulcio-server-trusted-artifact-signer.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com
+export COSIGN_REKOR_URL=https://rekor-server-trusted-artifact-signer.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com
+export COSIGN_MIRROR=https://tuf-trusted-artifact-signer.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com
+export COSIGN_ROOT=https://tuf-trusted-artifact-signer.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com/root.json
+export COSIGN_OIDC_CLIENT_ID=trusted-artifact-signer
+export COSIGN_OIDC_ISSUER=https://keycloak-keycloak-system.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com/auth/realms/trusted-artifact-signer
+export COSIGN_CERTIFICATE_OIDC_ISSUER=https://keycloak-keycloak-system.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com/auth/realms/trusted-artifact-signer
+export COSIGN_YES=true
+export SIGSTORE_FULCIO_URL=https://fulcio-server-trusted-artifact-signer.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com
+export SIGSTORE_OIDC_ISSUER=https://keycloak-keycloak-system.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com/auth/realms/trusted-artifact-signer
+export SIGSTORE_REKOR_URL=https://rekor-server-trusted-artifact-signer.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com
+export REKOR_REKOR_SERVER=https://rekor-server-trusted-artifact-signer.apps.cluster-z7f6g.z7f6g.sandbox1125.opentlc.com
