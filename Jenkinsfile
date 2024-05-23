@@ -1,90 +1,69 @@
 pipeline {
     agent any
-
     environment {
-        DOCKER_IMAGE = 'quay.io/rh-ee-akottuva/hangman:latest'
-        PYTHONPATH = "${env.WORKSPACE}"
-        COSIGN_TIMEOUT = '300'
+        IMAGE_NAME = "quay.io/rh-ee-akottuva/hangman:latest"
     }
-
     stages {
         stage('Checkout') {
             steps {
                 git url: 'https://github.com/Akshar-code/hangman', branch: 'main'
             }
         }
-
         stage('Setup Environment') {
             steps {
-                script {
-                    sh '''
-                        python3 -m venv venv
-                        source venv/bin/activate
-                        ./venv/bin/pip install --upgrade pip
-                        ./venv/bin/pip install -r requirements.txt
-                    '''
-                }
+                sh '''
+                    python3 -m venv venv
+                    source venv/bin/activate
+                    ./venv/bin/pip install --upgrade pip
+                    ./venv/bin/pip install -r requirements.txt
+                '''
             }
         }
-
         stage('Test') {
             steps {
-                script {
-                    sh '''
-                        source venv/bin/activate
-                        ./venv/bin/pytest
-                    '''
-                }
+                sh '''
+                    source venv/bin/activate
+                    export PYTHONPATH=$PYTHONPATH:$(pwd)
+                    ./venv/bin/pytest
+                '''
             }
         }
-
         stage('Build Container Image') {
             steps {
-                script {
+                sh '''
+                    podman build -t ${IMAGE_NAME} .
+                '''
+            }
+        }
+        stage('Push to Quay') {
+            steps {
+                withCredentials([string(credentialsId: 'quay-io-secret', variable: 'QUAY_PASSWORD')]) {
                     sh '''
-                        podman build -t ${DOCKER_IMAGE} .
-                        podman push ${DOCKER_IMAGE}
-                        export IMAGE_DIGEST=$(podman inspect --format='{{index .RepoDigests 0}}' ${DOCKER_IMAGE})
+                        podman login quay.io -u rh-ee-akottuva+robot_hangman -p ${QUAY_PASSWORD}
+                        podman push ${IMAGE_NAME}
                     '''
                 }
             }
         }
-
-        stage('Push to Quay') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'quay-robot-account-password', variable: 'QUAY_PASSWORD')]) {
-                        sh '''
-                            podman login quay.io -u rh-ee-akottuva+robot_hangman -p $QUAY_PASSWORD
-                            podman push ${DOCKER_IMAGE}
-                        '''
-                    }
-                }
-            }
-        }
-
         stage('Sign Image') {
             steps {
-                script {
-                    withCredentials([string(credentialsId: 'cosign-password', variable: 'COSIGN_PASSWORD')]) {
-                        sh '''
-                            source tas-env-values
-                            cosign initialize
-                            export COSIGN_TIMEOUT=${COSIGN_TIMEOUT}
-                            COSIGN_PASSWORD=$COSIGN_PASSWORD cosign sign ${IMAGE_DIGEST}
-                        '''
-                    }
+                withCredentials([string(credentialsId: 'cosign-password', variable: 'COSIGN_PASSWORD')]) {
+                    sh '''
+                        source tas-env-values
+                        cosign initialize
+                        cosign sign ${IMAGE_NAME} --yes
+                    '''
                 }
             }
         }
     }
-
     post {
         always {
             cleanWs()
+            echo "Pipeline finished"
         }
         failure {
-            echo 'Pipeline failed!'
+            echo "Pipeline failed!"
         }
     }
 }
